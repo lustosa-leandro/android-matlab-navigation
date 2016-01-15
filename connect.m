@@ -52,6 +52,15 @@ uicontrol(hFig,'unit','pixel','style','pushbutton','string','Exit',...
     'position',[100 10 50 25],'callback', ...
     {@exitCallback,u});
 
+% prepare interface for showing attitude result
+hPlane = Aero.Animation;
+hPlane.createBody('pa24-250_orange.ac','Ac3d');
+hPlane.show();
+posPlane = hPlane.Bodies{1}.Position;
+
+%% initialize navigation solution
+quat = [1 0 0 0]';
+
 %% main loop 
 while true
     
@@ -115,11 +124,20 @@ while true
         drawnow;
     end
     
+    %% updates navigation solution
+    if navData.gyr_hasData || navData.acc_hasData || navData.mag_hasData
+        quat = attitude_estimator(quat, navData.time, navData.gyr, navData.acc, navData.mag);
+        [proll, ppitch, pyaw] = quat2angle(quat');
+        angles = 180/pi*[proll ppitch pyaw];
+        hPlane.moveBody(1,posPlane, angles);
+    end
+    
 end
 
 %% closes UDP binding and figure
 fclose(u);
 close(hFig);
+hPlane.delete();
 
 end
 
@@ -156,5 +174,18 @@ fclose(udp_descrip);
 
 end
 
+%% attitude estimator
+% this function updates the navigation solution given new measurements
+function new_quat = attitude_estimator(prev_quat, time, gyr, acc, mag)
 
+% DEAR STUDENTS: IMPLEMENT THIS FUNCTION!!!
+% time is given in secs
+% gyr is given in rad/sec
+% acc is given in m/s^2
+% mag should be normalized for use
+
+% the following line should be deleted and replaced for your code.
+new_quat = prev_quat;
+
+end
 
